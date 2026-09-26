@@ -1,13 +1,15 @@
 // Tabla de tipos como DATOS: agregar un tipo = agregar una línea.
 // Clásicos integrados: Agua>Fuego>Planta>Agua, Electrico>Agua, Tierra>Electrico.
+// Veneno: el hongo invade Planta; Fuego incinera esporas; Tierra absorbe toxinas.
 export const BEATS = {
-  Tierra: ['Siniestro', 'Electrico'],
+  Tierra: ['Siniestro', 'Electrico', 'Veneno'],
   Siniestro: ['Psiquico'],
   Psiquico: ['Planta'],
   Planta: ['Tierra', 'Agua'],
-  Fuego: ['Planta'],
+  Fuego: ['Planta', 'Veneno'],
   Agua: ['Fuego'],
   Electrico: ['Agua'],
+  Veneno: ['Planta'],
 };
 
 export function typeMult(atkType, defType) {

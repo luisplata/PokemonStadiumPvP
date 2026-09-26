@@ -14,7 +14,7 @@ const BRAINS = {
   umbraclaw: { ultiSaveHp: 120 },
   psyflame: { ultiSaveHp: 120 },
   floraviva: { holdDefensive: { index: 0, hpFrac: 0.45 }, ultiSaveHp: 120 },
-  squirtle: { holdDefensive: { index: 1, hpFrac: 0.45 }, ultiSaveHp: 120 },
+  campeon: { holdDefensive: { index: 1, hpFrac: 0.45 }, ultiSaveHp: 120 },
 };
 
 const DEFAULT_BRAIN = { ultiSaveHp: 120 };

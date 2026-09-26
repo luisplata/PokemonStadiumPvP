@@ -36,29 +36,33 @@ const STATS = {
     hp: 1150, res: 130, resRegen: 19, speed: 180, radius: 26, preferredRange: 360,
     basic: { name: 'Latigazo', key: 'LMB', icon: '🌿', cd: 0.7, dmg: 52, range: 520, kind: 'proj', projSpeed: 700, projRadius: 10, range_ai: 500, color: '#9bffc4' },
   },
-  bulbasaur: {
-    name: 'Bulbasaur', role: 'Tanque', type: 'Planta', icon: '🌱',
-    color: '#58a05c', accent: '#8fd694',
-    hp: 1250, res: 110, resRegen: 13, speed: 165, radius: 27, preferredRange: 300,
-    basic: { name: 'Látigo Cepa', key: 'LMB', icon: '🌿', cd: 0.65, dmg: 50, range: 480, kind: 'proj', projSpeed: 750, projRadius: 10, range_ai: 460, color: '#8fd694' },
+  campeon: {
+    name: 'Campeón', role: 'Bruiser', type: 'Veneno', icon: '🦔',
+    portrait: { key: 'campeon', file: 'campeon.png', crop: [52, 0, 470, 987] },
+    color: '#6a9a4f', accent: '#a5d66f',
+    hp: 1250, res: 100, resRegen: 12, speed: 190, radius: 27, preferredRange: 120,
+    basic: { name: 'Espina Rápida', key: 'LMB', icon: '🌵', cd: 0.45, dmg: 45, range: 95, arc: 1.4, kind: 'melee', range_ai: 95, slow: { pct: 0.1, dur: 2 } },
   },
-  charmander: {
-    name: 'Charmander', role: 'Mago', type: 'Fuego', icon: '🔥',
-    color: '#e0632f', accent: '#ffb066',
-    hp: 900, res: 115, resRegen: 14, speed: 182, radius: 24, preferredRange: 200,
-    basic: { name: 'Arañazo', key: 'LMB', icon: '🐾', cd: 0.5, dmg: 55, range: 100, arc: 1.3, kind: 'melee', range_ai: 100 },
+  mortero: {
+    name: 'Mortero', role: 'Soporte', type: 'Veneno', icon: '🧨',
+    portrait: { key: 'mortero', file: 'mortero.png', crop: [70, 30, 430, 491] },
+    color: '#8a6f4d', accent: '#d8b24a',
+    hp: 950, res: 120, resRegen: 15, speed: 165, radius: 25, preferredRange: 420,
+    basic: { name: 'Bola de Cañón', key: 'LMB', icon: '💣', cd: 1.1, dmg: 80, range: 500, kind: 'proj', projSpeed: 320, projRadius: 14, range_ai: 480, color: '#d8b24a' },
   },
-  squirtle: {
-    name: 'Squirtle', role: 'Tanque', type: 'Agua', icon: '🐢',
-    color: '#4d8fd1', accent: '#9fd0ff',
-    hp: 1400, res: 100, resRegen: 11, speed: 158, radius: 29, preferredRange: 110,
-    basic: { name: 'Placaje', key: 'LMB', icon: '💥', cd: 0.8, dmg: 75, range: 110, arc: 1.4, kind: 'melee', range_ai: 110 },
+  franco: {
+    name: 'Franco', role: 'Daño', type: 'Veneno', icon: '🔭',
+    portrait: { key: 'franco', file: 'franco.png', crop: [160, 15, 530, 682] },
+    color: '#7d6fa8', accent: '#c0b3e8',
+    hp: 850, res: 100, resRegen: 14, speed: 195, radius: 23, preferredRange: 480,
+    basic: { name: 'Disparo de Esporas', key: 'LMB', icon: '🎯', cd: 0.8, dmg: 55, range: 600, kind: 'proj', projSpeed: 900, projRadius: 8, range_ai: 580, color: '#c0b3e8' },
   },
-  pikachu: {
-    name: 'Pikachu', role: 'Asesino', type: 'Electrico', icon: '⚡',
-    color: '#e8b923', accent: '#fff06e',
-    hp: 950, res: 105, resRegen: 16, speed: 215, radius: 23, preferredRange: 380,
-    basic: { name: 'Ataque Rápido', key: 'LMB', icon: '💨', cd: 0.4, dmg: 48, range: 95, arc: 1.4, kind: 'melee', range_ai: 95 },
+  disparador: {
+    name: 'Disparador', role: 'Control', type: 'Veneno', icon: '🎋',
+    portrait: { key: 'disparador', file: 'disparador.png', crop: [58, 5, 445, 802] },
+    color: '#4f8a7d', accent: '#8fd0c0',
+    hp: 1000, res: 110, resRegen: 14, speed: 175, radius: 25, preferredRange: 350,
+    basic: { name: 'Fruto Contaminado', key: 'LMB', icon: '🍇', cd: 0.9, dmg: 50, range: 520, kind: 'proj', projSpeed: 750, projRadius: 10, range_ai: 500, color: '#8fd0c0', slow: { pct: 0.15, dur: 2 } },
   },
 };
 
@@ -69,10 +73,10 @@ const KITS = {
   umbraclaw: ['shadow-slash', 'veil', 'blade-storm'],
   psyflame: ['fireball', 'teleport', 'psychic-nova'],
   floraviva: ['healing-pulse', 'vines', 'forest-blessing'],
-  bulbasaur: ['razor-leaf', 'sleep-powder', 'healing-pulse'],
-  charmander: ['ember', 'smokescreen', 'rock-charge'],
-  squirtle: ['water-gun', 'withdraw', 'rock-charge'],
-  pikachu: ['thunder-shock', 'thunder-wave', 'teleport'],
+  campeon: ['spore-charge', 'dorsal-shield', 'spore-masterpiece'],
+  mortero: ['bombardment', 'spore-mine', 'pearl-rain'],
+  franco: ['charged-shot', 'tailwind', 'silent-death'],
+  disparador: ['ice-spikes', 'snow-fungus', 'spore-winter'],
 };
 
 export const CLASSES = Object.fromEntries(

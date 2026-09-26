@@ -1,7 +1,8 @@
 # POKÉMON STADIUM PvP — Resumen del juego
 
-Arena de acción topdown 1v1. Elegís pokémon, le equipás 3 habilidades,
-y peleás contra la máquina (JcE) o contra un amigo en el mismo sillón (JCJ).
+Arena de acción topdown 1v1. Elegís criatura y peleás contra la máquina (JcE)
+o contra un amigo en el mismo sillón (JCJ). Cada campeón tiene su kit fijo
+con personalidad propia.
 https://luisplata.github.io/PokemonStadiumPvP/
 
 ## Modos
@@ -13,34 +14,35 @@ https://luisplata.github.io/PokemonStadiumPvP/
 
 ## Roster (8)
 
-| Pokémon | Rol | Tipo | Estilo |
+| Criatura | Rol | Tipo | Estilo |
 |---|---|---|---|
 | Terravox | Tanque | Tierra | Cono sísmico, escudo, terremoto |
 | Umbraclaw | Asesino | Siniestro | Dash, invisibilidad + crítico, torbellino |
 | Psyflame | Mago | Psíquico | Bola de fuego con quemadura, teletransporte, nova que aturde |
 | Floraviva | Sanador | Planta | Cura, lianas que enraízan, bendición que limpia estados |
-| Bulbasaur | Tanque | Planta | Hojas que atraviesan, somnífero, cura |
-| Charmander | Mago | Fuego | Ascuas que queman, humo que frena, embestida |
-| Squirtle | Tanque | Agua | Chorro que empuja, refugio, embestida |
-| Pikachu | Asesino | Eléctrico | Rayo velocísimo, parálisis en área, teletransporte |
+| Campeón | Bruiser | Veneno | Espinas que frenan, embestida, escudo con espinas, nova venenosa |
+| Mortero | Soporte | Veneno | Bombardeo en área, minas, zona que cura, lluvia de 5 zonas |
+| Franco | Daño | Veneno | Tiro cargado, dash que limpia slow, rayo canalizado |
+| Disparador | Control | Veneno | Conos y zonas de slow, raíz que envenena, invierno tóxico |
 
 ## Sistemas
 
-- **7 tipos con fortalezas** (Tierra/Siniestro/Psíquico/Planta/Fuego/Agua/Eléctrico):
+- **8 tipos con fortalezas** (Tierra/Siniestro/Psíquico/Planta/Fuego/Agua/Eléctrico/Veneno):
   daño x1.4 a favor, x0.72 en contra.
-- **Formato Pokémon real:** 1 ataque básico infinito y único por personaje + 3
-  habilidades intercambiables a elección (con botón asignado por orden: X/1, B/2, Y/3).
+- **Formato fijo por campeón:** 1 ataque básico infinito y único + 3 habilidades
+  propias (con botón asignado: X/1, B/2, Y/3). Sin intercambio: cada kit es la
+  personalidad del campeón y se balancea como unidad.
 - **PP estilo cartucho:** cada habilidad tiene usos limitados (las ultis solo 5).
-- **Afinidad por tipo:** no cualquiera aprende todo (las curas son de Planta/Psíquico,
+- **Afinidad por tipo:** valida los kits fijos al arrancar (las curas son de Planta/Psíquico,
   Teletransporte y Carga son universales).
 - **Recurso de maná**, cooldowns con sombra, escudos, quemadura, envenenamiento,
   stun, root, ralentizaciones y knockback.
 - **Auto-apuntado para mando:** sin tocar el stick derecho, apunta solo al rival.
-- **24 habilidades** en catálogo, todas combinables y reutilizables.
+- **40 habilidades** en catálogo, todas combinables y reutilizables.
 
 ## Flujo
 
-Menú (JcE/JCJ) → selección con info completa del kit → equipar loadout →
+Menú (JcE/JCJ) → selección con info completa del kit →
 pantalla versus → arena. Al terminar: revancha o menú, todo usable con mando.
 
 ## Estado

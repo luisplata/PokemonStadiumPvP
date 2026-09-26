@@ -41,16 +41,25 @@ export class VersusScene extends Phaser.Scene {
       const g = this.add.graphics();
       g.fillStyle(0x0d1420, 1).fillRoundedRect(px, py, pw, height - py - 120, 14);
       g.lineStyle(3, css(s.color), 1).strokeRoundedRect(px, py, pw, height - py - 120, 14);
-      this.add.text(px + pw / 2, py + 34, c.icon, { fontSize: '56px' }).setOrigin(0.5);
-      this.add.text(px + pw / 2, py + 84, `${s.tag} · ${c.name}`,
+      if (c.portrait && this.textures.exists(c.portrait.key)) {
+        const [pcx, pcy, pcw, pch] = c.portrait.crop;
+        const img = this.add.image(px + pw / 2, py + 115, c.portrait.key).setCrop(pcx, pcy, pcw, pch);
+        const asp = pcw / pch;
+        let dh = 190, dw = dh * asp;
+        if (dw > pw - 32) { dw = pw - 32; dh = dw / asp; }
+        img.setDisplaySize(dw, dh);
+      } else {
+        this.add.text(px + pw / 2, py + 115, c.icon, { fontSize: '72px' }).setOrigin(0.5);
+      }
+      this.add.text(px + pw / 2, py + 235, `${s.tag} · ${c.name}`,
         { fontSize: '20px', fontStyle: '800', color: s.color }).setOrigin(0.5);
-      this.add.text(px + pw / 2, py + 108, `${c.role} · Tipo ${c.type}`,
+      this.add.text(px + pw / 2, py + 259, `${c.role} · Tipo ${c.type}`,
         { fontSize: '12px', color: '#7b8ea3' }).setOrigin(0.5);
       const kitIds = (i === 0 ? this.p1Kit : this.p2Kit) || c.abilities.map((a) => a.id).filter((id) => ABILITIES[id]);
       const kit = [c.basic, ...kitIds.map((id) => ABILITIES[id]).filter(Boolean)];
       const keys = ['LMB/A', '1/X', '2/B', '3/Y'];
       kit.forEach((a, k) => {
-        this.add.text(px + 24, py + 140 + k * 30, `${a.icon} [${keys[k]}] ${a.name} (PP${a.pp ?? '∞'})`,
+        this.add.text(px + 24, py + 291 + k * 30, `${a.icon} [${keys[k]}] ${a.name} (PP${a.pp ?? '∞'})`,
           { fontSize: '14px', color: '#cddbe8' }).setOrigin(0, 0.5);
       });
     });

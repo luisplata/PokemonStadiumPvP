@@ -44,15 +44,31 @@ export class WorldRenderer {
       if (!z.fired) {
         g.fillStyle(col, 0.2 + 0.15 * Math.sin(time * 22)).fillCircle(z.x, z.y, z.r);
         g.lineStyle(3, col, 0.9).strokeCircle(z.x, z.y, z.r);
+      } else if (z.aura && z.aura.rem > 0) {
+        // Aura persistente: relleno tenue pulsante mientras dura.
+        g.fillStyle(col, 0.16 + 0.08 * Math.sin(time * 10)).fillCircle(z.x, z.y, z.r);
+        g.lineStyle(3, col, 0.75).strokeCircle(z.x, z.y, z.r);
       } else {
         const a = Math.max(0, 1 - z.fade / 0.4);
         g.fillStyle(col, a * 0.5).fillCircle(z.x, z.y, z.r * (1 + z.fade * 1.4));
       }
     }
+    for (const t of ctx.traps || []) {
+      const armed = t.t >= t.armT;
+      const pulse = 0.5 + 0.5 * Math.sin(time * (armed ? 8 : 3));
+      g.fillStyle(css(t.color), armed ? 0.5 + 0.3 * pulse : 0.25).fillCircle(t.x, t.y, armed ? 9 : 6);
+      g.lineStyle(2, css(t.color), armed ? 0.8 : 0.4).strokeCircle(t.x, t.y, t.r * (0.5 + 0.1 * pulse));
+    }
     for (const pt of ctx.particles) {
       const a = Math.max(0, Math.min(1, pt.t / pt.max));
       if (pt.ring) { g.lineStyle(Math.max(1, 6 * a), css(pt.color), a * 0.85); g.strokeCircle(pt.x, pt.y, pt.r * (1.25 - a * 0.35)); }
       else if (pt.arc) { g.lineStyle(14, css(pt.color), a * 0.75); g.beginPath().arc(pt.x, pt.y, pt.r, pt.ang - pt.arcWidth / 2, pt.ang + pt.arcWidth / 2).strokePath(); }
+      else if (pt.beam) {
+        g.lineStyle(Math.max(1, pt.width * a), css(pt.color), a);
+        g.lineBetween(pt.x, pt.y, pt.x + Math.cos(pt.ang) * pt.len, pt.y + Math.sin(pt.ang) * pt.len);
+        g.lineStyle(Math.max(1, pt.width * 0.4 * a), 0xffffff, a);
+        g.lineBetween(pt.x, pt.y, pt.x + Math.cos(pt.ang) * pt.len, pt.y + Math.sin(pt.ang) * pt.len);
+      }
       else { g.fillStyle(css(pt.color), a).fillCircle(pt.x, pt.y, Math.max(0.5, pt.r * a)); }
     }
     // lock-on: un retículo por jugador humano en modo auto

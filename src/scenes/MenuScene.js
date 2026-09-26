@@ -1,5 +1,6 @@
 // Pantalla 1: modo de juego. Navegable con teclado, mouse Y mando.
 import Phaser from 'phaser';
+import { CLASSES } from '../data/classes.js';
 import { PadNav, countPads } from '../systems/input.js';
 
 const OPTIONS = [
@@ -9,6 +10,12 @@ const OPTIONS = [
 
 export class MenuScene extends Phaser.Scene {
   constructor() { super('Menu'); }
+
+  preload() {
+    for (const c of Object.values(CLASSES)) {
+      if (c.portrait) this.load.image(c.portrait.key, `assets/fighters/${c.portrait.file}`);
+    }
+  }
 
   create() {
     const { width, height } = this.scale;

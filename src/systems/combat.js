@@ -13,6 +13,7 @@ export function spawnProjectile(ctx, owner, o) {
     pierce: !!o.pierce, hitSet: new Set(), trail: [],
     slowPct: o.slowPct || 0, slowDur: o.slowDur || 0,
     rootDur: o.rootDur || 0, burnDps: o.burnDps || 0, burnDur: o.burnDur || 0,
+    poisonDps: o.poisonDps || 0, poisonDur: o.poisonDur || 0,
     knock: o.knock || 0, onHit: o.onHit || null,
   };
   ctx.projectiles.push(p);
@@ -25,6 +26,7 @@ export function spawnZone(ctx, o) {
     t: 0, fired: false, fade: 0, dmg: o.dmg || 0,
     owner: o.owner, team: o.owner.team, color: o.color || '#ff8844',
     onHit: o.onHit || null, knock: o.knock || 0,
+    aura: o.aura ? { ...o.aura, rem: o.aura.dur, tick: 0 } : null,
   };
   ctx.zones.push(z);
   return z;
@@ -42,7 +44,7 @@ export function startDash(f, ang, speed, time, dmg, opts = {}) {
   f.dash = {
     vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed,
     time, dmg, hitSet: new Set(),
-    stun: opts.stun || 0, stopOnHit: !!opts.stopOnHit, color: opts.color || '#fff',
+    stun: opts.stun || 0, slow: opts.slow || null, stopOnHit: !!opts.stopOnHit, color: opts.color || '#fff',
   };
 }
 
@@ -50,10 +52,18 @@ export function applyStatus(target, st) {
   const s = target.status;
   if (st.stun) s.stun = Math.max(s.stun, st.stun);
   if (st.root) s.root = Math.max(s.root, st.root);
-  if (st.slowPct) { s.slowPct = Math.max(s.slowPct, st.slowPct); s.slowT = Math.max(s.slowT, st.slowDur || 2); }
+  // Slow con stacks: cada fuente multiplica (rendimientos decrecientes),
+  // tope global 60% (regla madre de la familia venenosa).
+  if (st.slowPct) {
+    if (!s.slowStacks) s.slowStacks = [];
+    s.slowStacks.push({ pct: st.slowPct, t: st.slowDur || 2 });
+    if (s.slowStacks.length > 8) s.slowStacks.shift();
+  }
   if (st.shield) { s.shield = Math.max(s.shield, st.shield); s.shieldT = Math.max(s.shieldT, st.shieldDur || 4); }
   if (st.invis) s.invis = Math.max(s.invis, st.invis);
   if (st.burn) { s.burn = Math.max(s.burn, st.burnDur || 3); s.burnDps = Math.max(s.burnDps, st.burnDps || 25); }
+  if (st.poison) { s.poison = Math.max(s.poison || 0, st.poisonDur || 3); s.poisonDps = Math.max(s.poisonDps || 0, st.poisonDps || 20); }
+  if (st.thorns) { s.thornsPct = Math.max(s.thornsPct || 0, st.thornsPct); s.thornsT = Math.max(s.thornsT || 0, st.thornsDur || 3); }
 }
 
 export function damage(ctx, target, amount, source, opts = {}) {
@@ -77,6 +87,11 @@ export function damage(ctx, target, amount, source, opts = {}) {
 
   target.hp -= dmg;
   target.hitFlash = 0.16;
+  // Espinas: quien te golpea se lleva slow.
+  if (s.thornsT > 0 && source && source.alive && source.status) {
+    applyStatus(source, { slowPct: s.thornsPct, slowDur: 2 });
+    spawnHitParticles(ctx, source.x, source.y, '#7ddf64');
+  }
   ctx.floaters.push({
     x: target.x + rand(-12, 12), y: target.y - target.radius - 8,
     vy: -55, t: 0.95, max: 0.95, text: String(Math.round(dmg)),
@@ -113,7 +128,7 @@ export function resolvePillars(ctx, e) {
 }
 
 export function castBasic(ctx, f, ax, ay) {
-  if (f.basicCd > 0 || f.status.stun > 0 || f.dash) return;
+  if (f.basicCd > 0 || f.status.stun > 0 || f.dash || f.casting) return;
   if ((f.pp?.basic ?? Infinity) <= 0) return;
   const b = f.def.basic;
   const ang = angTo(f, { x: ax, y: ay });
@@ -128,6 +143,8 @@ export function castBasic(ctx, f, ax, ay) {
         if (Math.abs(angDiff(angTo(f, e), ang)) < b.arc / 2 + 0.15) {
           damage(ctx, e, b.dmg, f);
           spawnHitParticles(ctx, e.x, e.y, f.def.accent);
+          if (b.slow) applyStatus(e, { slowPct: b.slow.pct, slowDur: b.slow.dur });
+          if (b.poison) applyStatus(e, { poisonDps: b.poison.dps, poisonDur: b.poison.dur });
         }
       }
     }
@@ -137,13 +154,15 @@ export function castBasic(ctx, f, ax, ay) {
     spawnProjectile(ctx, f, {
       x: f.x + Math.cos(ang) * f.radius, y: f.y + Math.sin(ang) * f.radius,
       angle: ang, speed: b.projSpeed, radius: b.projRadius, dmg: b.dmg, range: b.range, color: b.color,
+      slowPct: b.slow?.pct || 0, slowDur: b.slow?.dur || 0,
+      poisonDps: b.poison?.dps || 0, poisonDur: b.poison?.dur || 0,
     });
   }
 }
 
 export function castAbility(ctx, f, idx, ax, ay) {
   const a = f.def.abilities[idx];
-  if (!a || f.cds[a.key] > 0 || f.res < a.cost || f.status.stun > 0 || f.dash) return false;
+  if (!a || f.cds[a.key] > 0 || f.res < a.cost || f.status.stun > 0 || f.dash || f.casting) return false;
   if ((f.pp?.[a.key] ?? Infinity) <= 0) return false;
   f.res -= a.cost;
   f.cds[a.key] = a.cd;

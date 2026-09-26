@@ -41,7 +41,7 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     this.ctx = {
-      fighters: [], projectiles: [], zones: [], particles: [], floaters: [],
+      fighters: [], projectiles: [], zones: [], traps: [], particles: [], floaters: [],
       pillars: buildPillars(),
       onDeath: () => this.handleDeath(),
     };

@@ -3,7 +3,7 @@
 // El motor (RUNNERS + executeAbility) sabe ejecutar cada efecto.
 // Crear una habilidad nueva = agregar una entrada acá. Crear un pokémon
 // nuevo = elegir 4 ids existentes en classes.js. Nada de copiar cast().
-import { clamp, angTo, dist, angDiff } from '../utils/math.js';
+import { clamp, angTo, dist, angDiff, rand } from '../utils/math.js';
 import { WORLD } from './types.js';
 import {
   spawnProjectile, spawnZone, damage, heal,
@@ -28,6 +28,7 @@ const RUNNERS = {
           Math.abs(angDiff(angTo(f, e), aim.ang)) < (fx.halfAngle ?? 0.85)) {
         damage(ctx, e, fx.dmg, f);
         if (fx.slow) applyStatus(e, { slowPct: fx.slow.pct, slowDur: fx.slow.dur });
+        if (fx.poison) applyStatus(e, { poisonDps: fx.poison.dps, poisonDur: fx.poison.dur });
         if (fx.stun) applyStatus(e, { stun: fx.stun });
         if (fx.root) applyStatus(e, { root: fx.root });
         spawnHitParticles(ctx, e.x, e.y, fx.hitColor || f.def.accent);
@@ -47,7 +48,7 @@ const RUNNERS = {
 
   dash(ctx, f, fx, aim) {
     startDash(f, aim.ang, fx.speed, fx.time, fx.dmg, {
-      stun: fx.stun || 0, stopOnHit: !!fx.stopOnHit, color: fx.color || f.def.accent,
+      stun: fx.stun || 0, slow: fx.slow || null, stopOnHit: !!fx.stopOnHit, color: fx.color || f.def.accent,
     });
   },
 
@@ -90,7 +91,7 @@ const RUNNERS = {
     if (fx.immuneSlow) f.status.immuneSlow = fx.immuneSlow;
   },
 
-  cleanse(ctx, f) { f.status.stun = 0; f.status.root = 0; f.status.slowT = 0; f.status.burn = 0; },
+  cleanse(ctx, f) { f.status.stun = 0; f.status.root = 0; f.status.slowT = 0; f.status.slowStacks = []; f.status.slowPct = 0; f.status.burn = 0; },
 
   floater(ctx, f, fx) {
     ctx.floaters.push({
@@ -98,20 +99,98 @@ const RUNNERS = {
       t: 1, max: 1, text: fx.text, color: fx.color || '#fff', size: fx.size || 16,
     });
   },
+
+  thorns(ctx, f, fx) {
+    applyStatus(f, {});
+    f.status.thornsPct = Math.max(f.status.thornsPct || 0, fx.pct);
+    f.status.thornsT = Math.max(f.status.thornsT || 0, fx.dur);
+  },
+
+  cleanseSlow(ctx, f) {
+    f.status.slowStacks = [];
+    f.status.slowPct = 0;
+    f.status.slowT = 0;
+  },
+
+  mine(ctx, f, fx, aim) {
+    ctx.traps.push({
+      x: aim.ax, y: aim.ay, r: fx.r || 110, triggerR: fx.triggerR || 70,
+      armT: fx.armDelay ?? 0.5, ttl: fx.ttl || 20, t: 0,
+      dmg: fx.dmg, owner: f, team: f.team, color: fx.color || '#7ddf64',
+      slow: fx.slow || null, poison: fx.poison || null,
+    });
+  },
+
+  scatter(ctx, f, fx, aim) {
+    for (let i = 0; i < (fx.count || 5); i++) {
+      spawnZone(ctx, {
+        x: aim.ax + rand(-1, 1) * (fx.spread || 200),
+        y: aim.ay + rand(-1, 1) * (fx.spread || 200),
+        r: fx.r, delay: (fx.delay || 0.8) + i * 0.15, dmg: fx.dmg, owner: f,
+        color: fx.color, onHit: statusOnHit(fx),
+      });
+    }
+  },
+
+  aura(ctx, f, fx, aim) {
+    const at = fx.at === 'self' ? { x: f.x, y: f.y } : { x: aim.ax, y: aim.ay };
+    spawnZone(ctx, {
+      x: at.x, y: at.y, r: fx.r, delay: fx.delay ?? 0.4, dmg: 0, owner: f,
+      color: fx.color,
+      aura: {
+        dur: fx.dur, every: fx.every ?? 0.5,
+        slow: fx.slow || null, poison: fx.poison || null, root: fx.root || 0,
+        healRate: fx.healRate || 0,
+      },
+    });
+  },
+
+  beam(ctx, f, fx, aim) {
+    const dx = Math.cos(aim.ang), dy = Math.sin(aim.ang);
+    for (const e of ctx.fighters) {
+      if (e.team === f.team || !e.alive) continue;
+      const rx = e.x - f.x, ry = e.y - f.y;
+      const proj = rx * dx + ry * dy;
+      if (proj < 0 || proj > fx.range) continue;
+      if (Math.abs(rx * dy - ry * dx) < (fx.halfWidth || 30) + e.radius) {
+        damage(ctx, e, fx.dmg, f);
+        if (fx.slow) applyStatus(e, { slowPct: fx.slow.pct, slowDur: fx.slow.dur });
+        if (fx.poison) applyStatus(e, { poisonDps: fx.poison.dps, poisonDur: fx.poison.dur });
+        spawnHitParticles(ctx, e.x, e.y, fx.color);
+      }
+    }
+    ctx.particles.push({ x: f.x, y: f.y, vx: 0, vy: 0, ang: aim.ang, len: fx.range,
+      width: (fx.halfWidth || 30) * 2, color: fx.color, t: 0.25, max: 0.25, beam: true });
+  },
 };
 
 function statusOnHit(fx) {
-  if (!fx.slow && !fx.stun && !fx.root) return null;
+  if (!fx.slow && !fx.stun && !fx.root && !fx.poison) return null;
   return (e) => {
     if (fx.slow) applyStatus(e, { slowPct: fx.slow.pct, slowDur: fx.slow.dur });
     if (fx.stun) applyStatus(e, { stun: fx.stun });
     if (fx.root) applyStatus(e, { root: fx.root });
+    if (fx.poison) applyStatus(e, { poisonDps: fx.poison.dps, poisonDur: fx.poison.dur });
   };
+}
+
+export function runEffects(ctx, f, effects, aim) {
+  for (const fx of effects) RUNNERS[fx.do](ctx, f, fx, aim);
 }
 
 export function executeAbility(ctx, f, def, ax, ay) {
   const aim = { ax, ay, ang: angTo(f, { x: ax, y: ay }) };
-  for (const fx of def.effects) RUNNERS[fx.do](ctx, f, fx, aim);
+  const first = def.effects[0];
+  // Efecto 'cast' primero = casteo con raíz: se dispara al completar.
+  if (first && first.do === 'cast') {
+    f.casting = {
+      t: first.dur, then: def.effects.slice(1), ax, ay,
+      key: def.key, cd: def.cd, cost: def.cost, ppKey: def.key,
+    };
+    ctx.particles.push({ x: f.x, y: f.y, vx: 0, vy: 0, t: 0.4, max: 0.4, r: 40, color: '#ffffff', ring: true, ang: 0 });
+    return;
+  }
+  runEffects(ctx, f, def.effects, aim);
 }
 
 /* ------------------------- catálogo (datos) ------------------------- */
@@ -250,6 +329,97 @@ export const ABILITIES = {
     desc: 'Área que paraliza 60% por 2s',
     effects: [
       { do: 'zoneAt', r: 140, delay: 0.35, dmg: 20, color: '#ffe14d', slow: { pct: 0.6, dur: 2 } },
+    ] },
+
+  'spore-charge': { name: 'Carga de Esporas', icon: '🍂', cd: 8, cost: 25, types: ['Veneno'], range: 300, aimMode: 'target',
+    desc: 'Embestida que ralentiza 25% al atravesar',
+    effects: [
+      { do: 'dash', speed: 1100, time: 0.24, dmg: 20, slow: { pct: 0.25, dur: 2 }, color: '#7ddf64' },
+    ] },
+  'dorsal-shield': { name: 'Escudo Dorsal', icon: '🛡️', cd: 14, cost: 30, types: ['Veneno'], range: 9999, aimMode: 'self',
+    desc: 'Escudo 280 + quien te pega se frena',
+    effects: [
+      { do: 'shield', amount: 280, dur: 4 },
+      { do: 'thorns', pct: 0.2, dur: 4 },
+    ] },
+  'thorn-ice': { name: 'Hielo de Espinas', icon: '🧊', cd: 10, cost: 35, types: ['Veneno'], range: 220, aimMode: 'direction',
+    desc: 'Cono amplio: daño + slow 40%',
+    effects: [
+      { do: 'face' },
+      { do: 'cone', range: 220, halfAngle: 1.75, dmg: 90, slow: { pct: 0.4, dur: 2.5 }, hitColor: '#aee3ff' },
+    ] },
+  'spore-masterpiece': { name: 'Obra Maestra', icon: '🍄', cd: 30, cost: 60, pp: 5, types: ['Veneno'], range: 320, aimMode: 'self',
+    desc: 'ULTI: nova que envenena + frena 4s',
+    effects: [
+      { do: 'aura', at: 'self', r: 260, delay: 0.4, dur: 4, color: '#7ddf64',
+        slow: { pct: 0.3, dur: 2.5 }, poison: { dps: 30, dur: 4 } },
+    ] },
+  'bombardment': { name: 'Bombardeo', icon: '☄️', cd: 12, cost: 40, types: ['Veneno'], range: 550, aimMode: 'target',
+    desc: 'Zona telegrafiada: daño 150 en área',
+    effects: [
+      { do: 'zoneAt', r: 140, delay: 1.0, dmg: 150, color: '#d8b24a' },
+    ] },
+  'spore-mine': { name: 'Mina de Esporas', icon: '🟣', cd: 14, cost: 30, types: ['Veneno'], range: 400, aimMode: 'target',
+    desc: 'Trampa 20s: explota al pisar',
+    effects: [
+      { do: 'mine', r: 110, triggerR: 70, armDelay: 0.5, ttl: 20, dmg: 100, color: '#9d6fd1',
+        slow: { pct: 0.3, dur: 2 } },
+    ] },
+  'mineral-sap': { name: 'Savia Mineral', icon: '🧪', cd: 16, cost: 35, types: ['Veneno'], range: 9999, aimMode: 'self',
+    desc: 'Zona que cura 200 en 3s',
+    effects: [
+      { do: 'aura', at: 'self', r: 200, delay: 0.2, dur: 3, color: '#4bd88a', healRate: 70 },
+    ] },
+  'pearl-rain': { name: 'Lluvia de Perlas', icon: '🌧️', cd: 32, cost: 65, pp: 5, types: ['Veneno'], range: 400, aimMode: 'target',
+    desc: 'ULTI: 5 zonas telegrafiadas, 110 c/u',
+    effects: [
+      { do: 'scatter', count: 5, r: 110, delay: 0.8, dmg: 110, spread: 200, color: '#cfc3e8' },
+    ] },
+  'charged-shot': { name: 'Tiro Cargado', icon: '🏹', cd: 9, cost: 30, types: ['Veneno'], range: 700, aimMode: 'target',
+    desc: 'Casteo 1s: daño 220 (se interrumpe)',
+    effects: [
+      { do: 'cast', dur: 1.0 },
+      { do: 'projectile', speed: 1100, radius: 10, dmg: 220, range: 700, color: '#e8f0ff' },
+    ] },
+  'tailwind': { name: 'Viento a Favor', icon: '🌬️', cd: 10, cost: 20, types: ['Veneno'], range: 9999, aimMode: 'direction',
+    desc: 'Escape + limpia tu slow',
+    effects: [
+      { do: 'dash', speed: 1200, time: 0.25, dmg: 0, color: '#c0b3e8' },
+      { do: 'cleanseSlow' },
+    ] },
+  'spore-cloud': { name: 'Nube de Esporas', icon: '☁️', cd: 13, cost: 35, types: ['Veneno'], range: 450, aimMode: 'target',
+    desc: 'Nube 8s que frena 25% (visión: pendiente online)',
+    effects: [
+      { do: 'aura', at: 'point', r: 180, delay: 0.4, dur: 8, color: '#9d6fd1', slow: { pct: 0.25, dur: 2 } },
+    ] },
+  'silent-death': { name: 'Muerte Silenciosa', icon: '💀', cd: 30, cost: 60, pp: 5, types: ['Veneno'], range: 900, aimMode: 'target',
+    desc: 'ULTI: canaliza 1.2s, rayo de 380',
+    effects: [
+      { do: 'cast', dur: 1.2 },
+      { do: 'beam', range: 900, halfWidth: 26, dmg: 380, color: '#f2ecff' },
+    ] },
+  'ice-spikes': { name: 'Pinchos de Hielo', icon: '📌', cd: 9, cost: 30, types: ['Veneno'], range: 260, aimMode: 'direction',
+    desc: 'Cono: daño + slow 45%',
+    effects: [
+      { do: 'face' },
+      { do: 'cone', range: 260, halfAngle: 0.7, dmg: 70, slow: { pct: 0.45, dur: 2 }, hitColor: '#aee3ff' },
+    ] },
+  'snow-fungus': { name: 'Hongo de Nieve', icon: '⛄', cd: 15, cost: 35, types: ['Veneno'], range: 480, aimMode: 'target',
+    desc: 'Zona 6s que frena 35% al entrar',
+    effects: [
+      { do: 'aura', at: 'point', r: 220, delay: 0.4, dur: 6, color: '#bcd8e8', slow: { pct: 0.35, dur: 2 } },
+    ] },
+  'root-snare': { name: 'Arraigo', icon: '🪢', cd: 16, cost: 40, types: ['Veneno'], range: 400, aimMode: 'target',
+    desc: 'Enraíza 1.5s + envenena',
+    effects: [
+      { do: 'projectile', speed: 750, radius: 12, dmg: 60, range: 400, color: '#8fce7d',
+        rootDur: 1.5, poison: { dps: 20, dur: 3 } },
+    ] },
+  'spore-winter': { name: 'Invierno de Esporas', icon: '🌨️', cd: 34, cost: 70, pp: 5, types: ['Veneno'], range: 520, aimMode: 'target',
+    desc: 'ULTI: zona 5s slow 40% + veneno',
+    effects: [
+      { do: 'aura', at: 'point', r: 320, delay: 0.5, dur: 5, color: '#a9cdea',
+        slow: { pct: 0.4, dur: 2.5 }, poison: { dps: 25, dur: 4 } },
     ] },
 };
 

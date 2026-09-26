@@ -45,7 +45,7 @@ export class SelectScene extends Phaser.Scene {
     const gap = Math.max(12, width * 0.015);
     const cardW = Math.min(300, (width - 40 - gap * (this.keys.length - 1)) / this.keys.length);
     const s = cardW / 200;
-    const cardH = Math.round(cardW * 1.29);
+    const cardH = Math.round(cardW * 1.55);
     this.cardW = cardW;
     this.cardH = cardH;
     const startX = width / 2 - ((cardW + gap) * this.keys.length - gap) / 2;
@@ -61,13 +61,23 @@ export class SelectScene extends Phaser.Scene {
       const bg = this.add.graphics();
       bg.fillStyle(0x0d1420, 1).fillRoundedRect(x, y, cardW, this.cardH, 14);
       bg.lineStyle(2, css(c.color), 1).strokeRoundedRect(x, y, cardW, this.cardH, 14);
-      this.add.text(x + cardW / 2, y + 34 * s, c.icon, { fontSize: F(34) }).setOrigin(0.5);
-      this.add.text(x + cardW / 2, y + 70 * s, c.name, { fontSize: F(18), color: c.color, fontStyle: '800' }).setOrigin(0.5);
-      this.add.text(x + cardW / 2, y + 92 * s, `${c.role} · ${c.type}`, { fontSize: F(10), color: '#7b8ea3' }).setOrigin(0.5);
-      this.add.text(x + cardW / 2, y + 130 * s, `VIDA ${c.hp}\nVEL ${c.speed}\n${c.abilities.map((a) => a.icon).join(' ')}`,
+      // Retrato del arte propio (con recorte); fallback al emoji.
+      if (c.portrait && this.textures.exists(c.portrait.key)) {
+        const [pcx, pcy, pcw, pch] = c.portrait.crop;
+        const img = this.add.image(x + cardW / 2, y + 75 * s, c.portrait.key).setCrop(pcx, pcy, pcw, pch);
+        const asp = pcw / pch;
+        let dh = 130 * s, dw = dh * asp;
+        if (dw > cardW - 16) { dw = cardW - 16; dh = dw / asp; }
+        img.setDisplaySize(dw, dh);
+      } else {
+        this.add.text(x + cardW / 2, y + 75 * s, c.icon, { fontSize: F(44) }).setOrigin(0.5);
+      }
+      this.add.text(x + cardW / 2, y + 150 * s, c.name, { fontSize: F(18), color: c.color, fontStyle: '800' }).setOrigin(0.5);
+      this.add.text(x + cardW / 2, y + 170 * s, `${c.role} · ${c.type}`, { fontSize: F(10), color: '#7b8ea3' }).setOrigin(0.5);
+      this.add.text(x + cardW / 2, y + 205 * s, `VIDA ${c.hp}\nVEL ${c.speed}\n${c.abilities.map((a) => a.icon).join(' ')}`,
         { fontSize: F(12), color: '#93a6ba', align: 'center', lineSpacing: 4 }).setOrigin(0.5);
       c.abilities.forEach((a, j) => {
-        this.add.text(x + cardW / 2, y + (172 + j * 18) * s, `${a.icon} [${SEL_KEYS[j]}] ${a.name}`,
+        this.add.text(x + cardW / 2, y + (240 + j * 18) * s, `${a.icon} [${SEL_KEYS[j]}] ${a.name}`,
           { fontSize: F(11), color: '#cddbe8' }).setOrigin(0.5);
       });
       const hit = this.add.rectangle(x + cardW / 2, y + this.cardH / 2, cardW, this.cardH, 0xffffff, 0)
@@ -129,7 +139,7 @@ export class SelectScene extends Phaser.Scene {
       botCls = pool[Math.floor(Math.random() * pool.length)];
     }
     this.time.delayedCall(450, () => {
-      this.scene.start('Equip', {
+      this.scene.start('Versus', {
         mode: this.mode,
         p1Cls: this.p1.locked,
         p2Cls: this.pvp ? this.p2.locked : botCls,
