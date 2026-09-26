@@ -5,6 +5,7 @@ import { CLASSES } from '../data/classes.js';
 import { ABILITIES } from '../data/abilities.js';
 import { PadNav } from '../systems/input.js';
 import { css } from '../utils/color.js';
+import { splashBg } from '../ui/theme.js';
 
 export class VersusScene extends Phaser.Scene {
   constructor() { super('Versus'); }
@@ -20,6 +21,7 @@ export class VersusScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
     this.cameras.main.setBackgroundColor('#05070c');
+    splashBg(this, 0.82);
     this.born = this.time.now;
     this.awake = false;
     this.gone = false;
@@ -57,7 +59,7 @@ export class VersusScene extends Phaser.Scene {
         { fontSize: '12px', color: '#7b8ea3' }).setOrigin(0.5);
       const kitIds = (i === 0 ? this.p1Kit : this.p2Kit) || c.abilities.map((a) => a.id).filter((id) => ABILITIES[id]);
       const kit = [c.basic, ...kitIds.map((id) => ABILITIES[id]).filter(Boolean)];
-      const keys = ['LMB/A', '1/X', '2/B', '3/Y'];
+      const keys = ['LMB/R2', '1/R1', '2/L1', '3/L2'];
       kit.forEach((a, k) => {
         this.add.text(px + 24, py + 291 + k * 30, `${a.icon} [${keys[k]}] ${a.name} (PP${a.pp ?? '∞'})`,
           { fontSize: '14px', color: '#cddbe8' }).setOrigin(0, 0.5);

@@ -3,14 +3,15 @@
 // PvP: P1 (azul) con teclado+mouse, P2 (rojo) con mando. Lock con A/Enter/click.
 import Phaser from 'phaser';
 import { CLASSES } from '../data/classes.js';
-import { PadNav, countPads, resolveSlots, getPadBySlot } from '../systems/input.js';
+import { PadNav, countPads, resolveSlots } from '../systems/input.js';
 import { css } from '../utils/color.js';
+import { splashBg } from '../ui/theme.js';
 
 const P1 = { label: 'P1', color: '#3fa9ff' };
 const P2 = { label: 'P2', color: '#ff4d6d' };
 // Teclas combinadas teclado/mando: P1 usa LMB/1-3, P2 usa A/X/B/Y.
-const SEL_KEYS = ['1/X', '2/B', '3/Y'];
-const BASIC_KEY = 'LMB/A';
+const SEL_KEYS = ['1/R1', '2/L1', '3/L2'];
+const BASIC_KEY = 'LMB/R2';
 
 export class SelectScene extends Phaser.Scene {
   constructor() { super('Select'); }
@@ -20,6 +21,7 @@ export class SelectScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
     this.cameras.main.setBackgroundColor('#05070c');
+    splashBg(this);
     this.pvp = this.mode === 'pvp';
     // Gracia anti-autoselección: el Enter/A del menú no debe lockear acá.
     this.born = this.time.now;
@@ -38,8 +40,6 @@ export class SelectScene extends Phaser.Scene {
     this.add.text(width / 2, 60, this.pvp ? 'ELIJAN SU POKÉMON' : 'ELEGÍ TU POKÉMON',
       { fontSize: '34px', fontStyle: '800', color: '#ffffff' }).setOrigin(0.5);
     this.hint = this.add.text(width / 2, 100, '', { fontSize: '13px', color: '#7b8ea3' }).setOrigin(0.5);
-    this.debug = this.add.text(width / 2, height - 14, '', { fontSize: '11px', color: '#ff9d5c' }).setOrigin(0.5);
-    this.lastLock = 'nadie';
 
     // Cards a pantalla completa: escalan con la ventana.
     const gap = Math.max(12, width * 0.015);
@@ -103,28 +103,18 @@ export class SelectScene extends Phaser.Scene {
     this.kBack = kb ? kb.addKey('ESC') : null;
   }
 
-  lockP1(i, src = '?') {
-    this.logLock('P1', src);
+  lockP1(i) {
     if (!this.awake || this.p1.locked) return;
     this.p1.idx = i;
     this.p1.locked = this.keys[i];
-    this.lastLock = `P1 por ${src}`;
     this.maybeStart();
   }
 
-  lockP2(i, src = '?') {
-    this.logLock('P2', src);
+  lockP2(i) {
     if (!this.awake || !this.pvp || this.p2.locked) return;
     this.p2.idx = i;
     this.p2.locked = this.keys[i];
-    this.lastLock = `P2 por ${src}`;
     this.maybeStart();
-  }
-
-  logLock(who, src) {
-    const a0 = getPadBySlot(0)?.buttons[0]?.pressed ? 1 : 0;
-    const a1 = getPadBySlot(1)?.buttons[0]?.pressed ? 1 : 0;
-    console.log(`[select] intento lock ${who} por ${src} | pads:${countPads()} A0:${a0} A1:${a1} awake:${this.awake} p1:${this.p1.locked} p2:${this.p2.locked}`);
   }
 
   maybeStart() {
@@ -241,9 +231,6 @@ export class SelectScene extends Phaser.Scene {
     this.refreshDetail();
 
     const pads = countPads();
-    const a0 = getPadBySlot(0)?.buttons[0]?.pressed ? 1 : 0;
-    const a1 = getPadBySlot(1)?.buttons[0]?.pressed ? 1 : 0;
-    this.debug.setText(`pads:${pads} A0:${a0} A1:${a1} | último lock: ${this.lastLock}`);
     this.hint.setText(this.pvp
       ? `P1: ←→ + Enter/click${slots.p1 !== null ? ' + mando 1' : ''} · P2: su mando + A${pads === 0 ? ' · ¡conectá un mando!' : ''} · B/ESC vuelve`
       : '←→ + Enter/click · Mando: dpad + A · ESC vuelve');

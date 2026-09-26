@@ -1,6 +1,7 @@
 // Render del mundo: dibuja el ESTADO, no lo cambia. Si un día querés
 // cambiar canvas por sprites, shaders o lo que sea, se toca solo acá.
 import { WORLD } from '../data/types.js';
+import { RIVER, SAND_H } from './terrain.js';
 import { getLocks } from './aim.js';
 import { clamp, TAU } from '../utils/math.js';
 import { css } from '../utils/color.js';
@@ -9,6 +10,20 @@ export class WorldRenderer {
   constructor(scene) {
     this.scene = scene;
     this.gfx = scene.add.graphics().setDepth(10);
+    // Piso de pasto tileado (Kenney). Si falta la textura, el fondo queda negro.
+    if (scene.textures.exists('grass')) {
+      this.ground = scene.add.tileSprite(0, 0, WORLD.w, WORLD.h, 'grass').setOrigin(0, 0).setDepth(0);
+    } else {
+      this.ground = null;
+    }
+    // Río + orillas de arena (ver terrain.js).
+    if (scene.textures.exists('water')) {
+      this.water = scene.add.tileSprite(0, RIVER.y0, WORLD.w, RIVER.y1 - RIVER.y0, 'water').setOrigin(0, 0).setDepth(0);
+    }
+    if (scene.textures.exists('sand')) {
+      scene.add.tileSprite(0, RIVER.y0 - SAND_H, WORLD.w, SAND_H, 'sand').setOrigin(0, 0).setDepth(0);
+      scene.add.tileSprite(0, RIVER.y1, WORLD.w, SAND_H, 'sand').setOrigin(0, 0).setDepth(0);
+    }
     this.floatTexts = [];
     this.fighterTexts = new Map();
   }
@@ -25,14 +40,20 @@ export class WorldRenderer {
   render(ctx, time, player) {
     const g = this.gfx;
     g.clear();
-    // arena
-    g.fillStyle(0x141d2b, 1).fillRect(0, 0, WORLD.w, WORLD.h);
-    g.lineStyle(1, 0xffffff, 0.04);
-    for (let x = 0; x <= WORLD.w; x += 100) g.lineBetween(x, 0, x, WORLD.h);
-    for (let y = 0; y <= WORLD.h; y += 100) g.lineBetween(0, y, WORLD.w, y);
+    // arena: el piso lo pone el tileSprite; acá marcas y borde
+    if (!this.ground) {
+      g.fillStyle(0x141d2b, 1).fillRect(0, 0, WORLD.w, WORLD.h);
+      g.lineStyle(1, 0xffffff, 0.04);
+      for (let x = 0; x <= WORLD.w; x += 100) g.lineBetween(x, 0, x, WORLD.h);
+      for (let y = 0; y <= WORLD.h; y += 100) g.lineBetween(0, y, WORLD.w, y);
+    }
     g.lineStyle(4, 0x4a7fb5, 0.25);
     g.strokeCircle(WORLD.w / 2, WORLD.h / 2, 260);
     g.strokeCircle(WORLD.w / 2, WORLD.h / 2, 90);
+    // Espuma en las orillas del río.
+    g.lineStyle(3, 0xffffff, 0.45);
+    g.lineBetween(0, RIVER.y0 + 2, WORLD.w, RIVER.y0 + 2);
+    g.lineBetween(0, RIVER.y1 - 2, WORLD.w, RIVER.y1 - 2);
     g.lineStyle(8, 0x2f4a68, 1).strokeRect(4, 4, WORLD.w - 8, WORLD.h - 8);
 
     for (const pl of ctx.pillars) {
@@ -79,6 +100,14 @@ export class WorldRenderer {
       const r = t.radius + 16 + pulse * 4;
       g.lineStyle(2.5, 0xffd93d, 0.9).strokeCircle(t.x, t.y, r);
       g.lineStyle(1.5, 0xffd93d, 0.25).lineBetween(lock.fighter.x, lock.fighter.y, t.x, t.y);
+    }
+    // guía de apuntado manual (mantener shoulder en mando)
+    for (const f of ctx.fighters) {
+      if (!f.alive || !f.aiming) continue;
+      const a = f.aiming.ang, R = f.aiming.range || 300;
+      const ex = f.x + Math.cos(a) * R, ey = f.y + Math.sin(a) * R;
+      g.lineStyle(3, 0xffd93d, 0.45).lineBetween(f.x, f.y, ex, ey);
+      g.fillStyle(0xffd93d, 0.6).fillCircle(ex, ey, 6);
     }
     for (const pr of ctx.projectiles) {
       const col = css(pr.color);

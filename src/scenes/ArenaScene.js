@@ -92,6 +92,7 @@ export class ArenaScene extends Phaser.Scene {
       }
     }
     this.over = true;
+    this.ctx.over = true;
   }
 
   handleHuman(f, dt, awake) {
@@ -111,7 +112,6 @@ export class ArenaScene extends Phaser.Scene {
     if (f.dodgeCd) f.dodgeCd = Math.max(0, f.dodgeCd - dt);
 
     if (inp.useMouse && mouse.down) castBasic(this.ctx, f, mouse.wx, mouse.wy);
-    if (pad.connected && pad.basic) castBasic(this.ctx, f, baseAim.x, baseAim.y);
 
     if (inp.useKeyboard) {
       const codes = ['Digit1', 'Digit2', 'Digit3'];
@@ -123,12 +123,42 @@ export class ArenaScene extends Phaser.Scene {
         }
       });
     }
-      if (pad.connected) for (let i = 0; i < f.def.abilities.length; i++) {
-      if (pad.abilities[i]) {
-        const a = f.def.abilities[i];
-        const pt = getAimPointFor(this.ctx.fighters, f, a.aimMode, inp);
-        castAbility(this.ctx, f, i, pt.x, pt.y);
+
+    // Mando estilo Brawl (R2 básico, R1/L1/L2 habs): tap = auto-apuntado,
+    // mantener = guía con stick derecho, soltar = disparar. Self se dispara
+    // al presionar (no tiene a dónde apuntar).
+    if (pad.connected) {
+      let aiming = false;
+      for (let i = 0; i <= f.def.abilities.length; i++) {
+        const slot = inp.shots[i];
+        const isBasic = i === 0;
+        const aimMode = isBasic ? 'target' : f.def.abilities[i - 1].aimMode;
+        const fire = (pt) => {
+          if (isBasic) castBasic(this.ctx, f, pt.x, pt.y);
+          else castAbility(this.ctx, f, i - 1, pt.x, pt.y);
+        };
+        if (slot.tap) {
+          slot.tap = false;
+          fire(getAimPointFor(this.ctx.fighters, f, aimMode, inp));
+        } else if (slot.down && slot.t >= inp.TAP && aimMode !== 'self') {
+          aiming = true;
+          let ang = f.facing;
+          if (pad.aimAngle !== null) { ang = pad.aimAngle; f.facing = ang; }
+          const rawR = isBasic ? (f.def.basic.range || 300) : (f.def.abilities[i - 1].range || 300);
+          f.aiming = { idx: i, ang, range: Math.min(rawR, 900) };
+        } else if (slot.aimFire) {
+          slot.aimFire = false;
+          if (pad.aimAngle !== null) {
+            fire({ x: f.x + Math.cos(pad.aimAngle) * 450, y: f.y + Math.sin(pad.aimAngle) * 450 });
+          } else {
+            fire(getAimPointFor(this.ctx.fighters, f, aimMode, inp));
+          }
+          f.aiming = null;
+        }
       }
+      if (!aiming) f.aiming = null;
+    } else {
+      f.aiming = null;
     }
   }
 
@@ -163,8 +193,8 @@ export class ArenaScene extends Phaser.Scene {
     const slots = resolveSlots(this.mode);
     this.p1input.padSlot = slots.p1;
     if (this.p2input) this.p2input.padSlot = slots.p2;
-    this.p1input.poll();
-    this.p2input?.poll();
+    this.p1input.poll(dt);
+    this.p2input?.poll(dt);
 
     if (!this.over) {
       const awake = this.time.now - this.born > 300;

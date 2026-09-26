@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 import { CLASSES } from '../data/classes.js';
 import { PadNav, countPads } from '../systems/input.js';
+import { THEME, titleStyle, bodyStyle, panel, splashBg } from '../ui/theme.js';
 
 const OPTIONS = [
   { mode: 'pve', icon: '⚔️', title: 'JcE — ARENA', desc: 'Vos contra la máquina' },
@@ -15,16 +16,20 @@ export class MenuScene extends Phaser.Scene {
     for (const c of Object.values(CLASSES)) {
       if (c.portrait) this.load.image(c.portrait.key, `assets/fighters/${c.portrait.file}`);
     }
+    this.load.image('grass', 'assets/tiles/grass.png');
+    this.load.image('sand', 'assets/tiles/sand.png');
+    this.load.image('water', 'assets/tiles/water.png');
   }
 
   create() {
     const { width, height } = this.scale;
     this.cameras.main.setBackgroundColor('#05070c');
+    splashBg(this);
     this.sel = 0;
     this.nav = new PadNav(0);
 
-    this.add.text(width / 2, 90, 'POKÉARENA', { fontSize: '52px', color: '#ffffff', fontStyle: '800' }).setOrigin(0.5);
-    this.add.text(width / 2, 132, 'ELEGÍ EL MODO', { fontSize: '14px', color: '#5d7d9e' }).setOrigin(0.5);
+    this.add.text(width / 2, 90, 'POKÉARENA', titleStyle()).setOrigin(0.5);
+    this.add.text(width / 2, 140, 'ELEGÍ EL MODO', bodyStyle(THEME.muted, '14px')).setOrigin(0.5);
 
     this.optGfx = this.add.graphics();
     this.optTexts = [];
@@ -34,8 +39,8 @@ export class MenuScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true });
       hit.on('pointerover', () => { this.sel = i; });
       hit.on('pointerdown', () => this.choose(o.mode));
-      const t1 = this.add.text(width / 2, y - 14, `${o.icon}  ${o.title}`, { fontSize: '22px', fontStyle: '800', color: '#dbe9f7' }).setOrigin(0.5);
-      const t2 = this.add.text(width / 2, y + 20, o.desc, { fontSize: '13px', color: '#7b8ea3' }).setOrigin(0.5);
+      const t1 = this.add.text(width / 2, y - 14, `${o.icon}  ${o.title}`, { fontFamily: THEME.fontTitle, fontSize: '20px', color: THEME.text }).setOrigin(0.5);
+      const t2 = this.add.text(width / 2, y + 20, o.desc, bodyStyle(THEME.muted, '13px')).setOrigin(0.5);
       this.optTexts.push([t1, t2]);
     });
 
@@ -78,8 +83,7 @@ export class MenuScene extends Phaser.Scene {
     OPTIONS.forEach((o, i) => {
       const y = 250 + i * 120;
       const on = i === this.sel;
-      this.optGfx.fillStyle(on ? 0x14202f : 0x0d1420, 1).fillRoundedRect(width / 2 - 230, y - 48, 460, 96, 14);
-      this.optGfx.lineStyle(2, on ? 0x5fa8ff : 0x22303f, 1).strokeRoundedRect(width / 2 - 230, y - 48, 460, 96, 14);
+      panel(this.optGfx, width / 2 - 230, y - 48, 460, 96, { selected: on, edge: on ? THEME.solar : THEME.panelEdge });
     });
 
     const n = countPads();

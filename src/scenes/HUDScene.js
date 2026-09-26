@@ -22,6 +22,7 @@ export class HUDScene extends Phaser.Scene {
     this.endNavB = new PadNav(1);
 
     this.endText = this.add.text(0, 0, '', { fontSize: '52px', fontStyle: '800', color: '#fff' }).setOrigin(0.5).setDepth(200).setVisible(false);
+    this.endBg = this.add.rectangle(0, 0, 10, 10, 0x02040a, 0.72).setOrigin(0.5).setDepth(199).setVisible(false);
     this.optTexts = [];
     const labels = ['🔁 REVANCHA', '📋 MENÚ'];
     labels.forEach((lb, i) => {
@@ -45,7 +46,7 @@ export class HUDScene extends Phaser.Scene {
     // Etiqueta por botón según con qué juega: teclado, mando o ambos.
     const kb = inp.useKeyboard, pad = inp.padSlot !== null;
     const K = ['LMB', '1', '2', '3'];
-    const G = ['A', 'X', 'B', 'Y'];
+    const G = ['R2', 'R1', 'L1', 'L2'];
     return K.map((k, i) => (kb && pad ? `${k}/${G[i]}` : kb ? k : G[i]));
   }
 
@@ -125,7 +126,7 @@ export class HUDScene extends Phaser.Scene {
       const frac = max > 0 ? Math.max(0, Math.min(1, cd / max)) : 0;
 
       g.fillStyle(0x0d1420, 0.92).fillRoundedRect(cx0, y, CARD_W, CARD_H, 10);
-      g.lineStyle(2, noMana ? 0x2b3648 : 0x4a5a70, 1).strokeRoundedRect(cx0, y, CARD_W, CARD_H, 10);
+      g.lineStyle(p.aiming && p.aiming.idx === i ? 3 : 2, p.aiming && p.aiming.idx === i ? 0xffd93d : noMana ? 0x2b3648 : 0x4a5a70, 1).strokeRoundedRect(cx0, y, CARD_W, CARD_H, 10);
       if (frac > 0) g.fillStyle(0x02060e, 0.78).fillRect(cx0 + 2, y + 2, (CARD_W - 4) * frac, CARD_H - 4);
 
       const ppCur = i === 0 ? p.pp?.basic : p.pp?.[p.def.abilities[i - 1].key];
@@ -175,6 +176,7 @@ export class HUDScene extends Phaser.Scene {
     if (this.kDown && Phaser.Input.Keyboard.JustDown(this.kDown)) this.choice = 1;
 
     const w = this.winner();
+    this.endBg.setPosition(width / 2, height / 2).setSize(width, height).setVisible(true);
     this.endText.setText(w.text).setColor(w.color)
       .setPosition(width / 2, height / 2 - 70).setVisible(true);
     this.optTexts.forEach((o, i) => {
@@ -193,6 +195,7 @@ export class HUDScene extends Phaser.Scene {
   hideEnd() {
     this.endShown = false;
     this.choice = 0;
+    this.endBg.setVisible(false);
     this.endText.setVisible(false);
     this.endHint.setVisible(false);
     this.optTexts.forEach((o) => { o.t.setVisible(false); o.hit.setVisible(false); });

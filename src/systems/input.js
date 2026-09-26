@@ -14,8 +14,13 @@ export class Input {
     this.aimSource = 'mouse';
     this.pad = {
       connected: false, move: { x: 0, y: 0 }, aimAngle: null,
-      abilities: [false, false, false, false], basic: false, dodge: false,
+      dodge: false,
     };
+    // Disparo estilo Brawl: R2 básico, R1/L1/L2 habilidades 1-3.
+    // tap (soltar rápido) = auto-apuntado; mantener = apuntado manual
+    // con stick derecho, soltar = disparar.
+    this.TAP = 0.28;
+    this.shots = [7, 5, 4, 6].map((btn) => ({ btn, down: false, t: 0, tap: false, aimFire: false }));
     this.deadzone = 0.22;
     this.bound = false;
   }
@@ -53,15 +58,15 @@ export class Input {
     return this.pad.connected;
   }
 
-  poll() {
+  poll(dt = 0.016) {
     const gp = this.padDevice();
     const pad = this.pad;
     pad.connected = !!gp;
     if (!gp) {
       pad.move.x = 0; pad.move.y = 0;
       pad.aimAngle = null;
-      pad.abilities = [false, false, false, false];
-      pad.basic = false; pad.dodge = false;
+      pad.dodge = false;
+      for (const s of this.shots) { s.down = false; s.t = 0; s.tap = false; s.aimFire = false; }
       return;
     }
     let lx = gp.axes[0] || 0, ly = gp.axes[1] || 0;
@@ -72,16 +77,21 @@ export class Input {
     pad.aimAngle = Math.hypot(rx, ry) < this.deadzone ? null : Math.atan2(ry, rx);
 
     const b = gp.buttons;
-    // Mando: A = básico, X/B/Y = habilidades 1-3, LT = esquiva.
-    pad.basic = !!(b[0]?.pressed);
-    pad.abilities[0] = !!(b[2]?.pressed);
-    pad.abilities[1] = !!(b[1]?.pressed);
-    pad.abilities[2] = !!(b[3]?.pressed);
-    pad.abilities[3] = false;
+    // R2 básico, R1/L1/L2 habilidades · LT esquiva.
+    for (const s of this.shots) {
+      const down = !!b[s.btn]?.pressed;
+      if (down && !s.down) { s.down = true; s.t = 0; }
+      else if (down) s.t += dt;
+      else if (!down && s.down) {
+        if (s.t < this.TAP) s.tap = true;
+        else s.aimFire = true;
+        s.down = false; s.t = 0;
+      }
+    }
     pad.dodge = !!(b[6] && (b[6].pressed || b[6].value > 0.5));
 
     if (lx !== 0 || ly !== 0 || pad.aimAngle !== null ||
-        pad.abilities.some(Boolean) || pad.basic || pad.dodge) {
+        this.shots.some((s) => s.down || s.tap || s.aimFire) || pad.dodge) {
       this.aimSource = 'gamepad';
     }
   }

@@ -3,6 +3,7 @@ import { CLASSES } from '../data/classes.js';
 import { damage, applyStatus, resolvePillars, spawnHitParticles } from '../systems/combat.js';
 import { think } from '../systems/bot.js';
 import { runEffects, makeAbility } from '../data/abilities.js';
+import { inWater, WATER_SLOW } from '../systems/terrain.js';
 
 export class Fighter {
   // controller: { kind:'bot' } | { kind:'local', input: Input }
@@ -25,7 +26,7 @@ export class Fighter {
     this.pp = { basic: d.basic.pp ?? Infinity };
     d.abilities.forEach((a) => (this.pp[a.key] = a.pp ?? Infinity));
     this.basicCd = 0; this.hitFlash = 0;
-    this.dash = null; this.spin = null; this.casting = null;
+    this.dash = null; this.spin = null; this.casting = null; this.rippleT = 0;
     this.kx = 0; this.ky = 0;
     this.aiTimer = 0; this.dodgeCd = 0;
     // pizarra del bot (la lee/escribe systems/bot.js, no la lógica de movimiento)
@@ -139,16 +140,18 @@ export class Fighter {
     }
 
     let dx = 0, dy = 0;
-    if (this.controller.kind === 'local') {
-      const { keys, pad } = this.controller.input;
-      if (keys.KeyA || keys.ArrowLeft) dx -= 1;
-      if (keys.KeyD || keys.ArrowRight) dx += 1;
-      if (keys.KeyW || keys.ArrowUp) dy -= 1;
-      if (keys.KeyS || keys.ArrowDown) dy += 1;
-      if (pad.connected) { dx += pad.move.x; dy += pad.move.y; }
-    } else {
-      const mv = think(ctx, this, dt);
-      dx = mv.x; dy = mv.y;
+    if (!ctx.over) {
+      if (this.controller.kind === 'local') {
+        const { keys, pad } = this.controller.input;
+        if (keys.KeyA || keys.ArrowLeft) dx -= 1;
+        if (keys.KeyD || keys.ArrowRight) dx += 1;
+        if (keys.KeyW || keys.ArrowUp) dy -= 1;
+        if (keys.KeyS || keys.ArrowDown) dy += 1;
+        if (pad.connected) { dx += pad.move.x; dy += pad.move.y; }
+      } else {
+        const mv = think(ctx, this, dt);
+        dx = mv.x; dy = mv.y;
+      }
     }
 
     const mag = Math.hypot(dx, dy);
@@ -158,10 +161,23 @@ export class Fighter {
     if (s.stun > 0 || s.root > 0) spd = 0;
     if (s.slowT > 0 && s.immuneSlow <= 0) spd *= 1 - s.slowPct;
     if (s.invis > 0) spd *= 1.45;
+    // Agua: frena al que la cruza (ver terrain.js).
+    const wet = inWater(this.x, this.y);
+    if (wet) spd *= WATER_SLOW;
 
     this.x += dx * spd * dt;
     this.y += dy * spd * dt;
     resolvePillars(ctx, this);
+
+    // Ondas al moverse en el agua.
+    if (wet && mag > 0.1 && spd > 0) {
+      this.rippleT -= dt;
+      if (this.rippleT <= 0) {
+        this.rippleT = 0.22;
+        ctx.particles.push({ x: this.x + rand(-10, 10), y: this.y + rand(-6, 6), vx: 0, vy: 0,
+          t: 0.4, max: 0.4, r: rand(8, 14), color: '#e8f7ff', ring: true, ang: 0 });
+      }
+    }
 
     if (this.spin) {
       this.spin.t -= dt;
