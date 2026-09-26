@@ -3,7 +3,7 @@
 Arena de acción topdown 1v1. Elegís criatura y peleás contra la máquina (JcE)
 o contra un amigo en el mismo sillón (JCJ). Cada campeón tiene su kit fijo
 con personalidad propia.
-https://luisplata.github.io/PokemonStadiumPvP/
+https://luisplata.github.io/carnaval-solar-arena/
 
 ## Modos
 

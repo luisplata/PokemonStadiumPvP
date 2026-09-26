@@ -6,7 +6,7 @@ Hecho con Phaser 4 + Vite, sin dependencias de más.
 ## Jugar
 
 - Local: `npm install` y `npm run dev` (http://localhost:5173)
-- Online: https://luisplata.github.io/PokemonStadiumPvP/ (deploy automático por GitHub Actions en cada push a `main`)
+- Online: https://luisplata.github.io/carnaval-solar-arena/ (deploy automático por GitHub Actions en cada push a `main`)
 
 ## Controles
 
