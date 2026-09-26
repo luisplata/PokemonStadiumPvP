@@ -5,9 +5,13 @@ node_modules/
 dist/
 dist-ssr/
 *.local
-
 # Vite
 .vite/
+
+# Zips crudos (se extraen a assets/ y no se commitean)
+assets/*.zip
+assets/*.rar
+assets/*.7z
 
 # OS / editores
 .DS_Store
