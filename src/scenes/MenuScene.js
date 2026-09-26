@@ -28,7 +28,7 @@ export class MenuScene extends Phaser.Scene {
     this.sel = 0;
     this.nav = new PadNav(0);
 
-    this.add.text(width / 2, 90, 'POKÉARENA', titleStyle()).setOrigin(0.5);
+    this.add.text(width / 2, 90, 'CARNAVAL SOLAR', titleStyle()).setOrigin(0.5);
     this.add.text(width / 2, 140, 'ELEGÍ EL MODO', bodyStyle(THEME.muted, '14px')).setOrigin(0.5);
 
     this.optGfx = this.add.graphics();

@@ -1,7 +1,7 @@
-# DEUDA TÉCNICA — PokéArena (Phaser)
+# DEUDA TÉCNICA — Carnaval Solar (Phaser)
 
 > Estado al cerrar la sesión de refactor "catálogo de habilidades".
-> El juego anda idéntico al `PokemonV4.html` original. Lo de abajo es lo que
+> El juego anda idéntico al `arena-legado.html` original. Lo de abajo es lo que
 > duele (o va a doler) cuando sumemos contenido.
 
 ## Deuda 1 — `ArenaScene.js` hace 3 trabajos [HECHA]
@@ -37,7 +37,7 @@ solo mueve y aplica estados.
   o id mal escrito falla fuerte al cargar, no en mitad de la partida.
 
 ## Cómo agregar contenido (no es deuda, es la prueba de que el diseño anda)
-- **Pokémon nuevo:** 1 bloque en `STATS` + 1 línea en `KITS`
+- **Criatura nueva:** 1 bloque en `STATS` + 1 línea en `KITS`
   (`src/data/classes.js`). ~10 líneas, cero lógica. Hereda menú, HUD, bot.
 - **Habilidad nueva:** 1 entrada en `ABILITIES` (`src/data/abilities.js`)
   combinando efectos primitivos (`projectile`, `cone`, `dash`, `zoneSelf`,

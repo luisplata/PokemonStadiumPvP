@@ -1,10 +1,13 @@
-# PokéArena — Qué está pasando en `PokemonV4.html`
+# Arena (legado) — Qué está pasando en `arena-legado.html`
+
+> Nota histórica: prototipo anterior al juego actual (ya reemplazado por el
+> proyecto Phaser). Se conserva como referencia, no se usa.
 
 Este archivo es un **juego completo en un solo HTML**, sin librerías externas. Solo HTML + CSS + JavaScript vanilla con Canvas 2D.
 
 Idea: arena PvP topdown 1v1. Elegís 1 de 4 clases y peleás contra un bot con IA.
 
-Para correrlo: abrir `PokemonV4.html` en el navegador. Nada más.
+Para correrlo: abrir `arena-legado.html` en el navegador. Nada más.
 
 ---
 

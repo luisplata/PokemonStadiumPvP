@@ -1,7 +1,7 @@
 // Catálogo único de habilidades.
 // Cada habilidad es DATOS: identidad + lista de efectos primitivos.
 // El motor (RUNNERS + executeAbility) sabe ejecutar cada efecto.
-// Crear una habilidad nueva = agregar una entrada acá. Crear un pokémon
+// Crear una habilidad nueva = agregar una entrada acá. Crear una criatura
 // nuevo = elegir 4 ids existentes en classes.js. Nada de copiar cast().
 import { clamp, angTo, dist, angDiff, rand } from '../utils/math.js';
 import { WORLD } from './types.js';

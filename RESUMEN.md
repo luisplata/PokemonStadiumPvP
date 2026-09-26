@@ -1,4 +1,4 @@
-# POKÉMON STADIUM PvP — Resumen del juego
+# CARNAVAL SOLAR — Resumen del juego
 
 Arena de acción topdown 1v1. Elegís criatura y peleás contra la máquina (JcE)
 o contra un amigo en el mismo sillón (JCJ). Cada campeón tiene su kit fijo

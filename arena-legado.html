@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PokéArena — Prototipo</title>
+<title>Arena — Prototipo (legado)</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:100%;height:100%;overflow:hidden;background:#05070c;
@@ -152,7 +152,7 @@ const TAU = Math.PI*2;
 function angDiff(a,b){ let d=a-b; while(d>Math.PI)d-=TAU; while(d<-Math.PI)d+=TAU; return d; }
 function lerp(a,b,t){ return a+(b-a)*t; }
 
-/* ------------------------------ TIPOS (Pokémon) ------------------------- */
+/* ------------------------------ TIPOS (Criaturas) ------------------------- */
 const BEATS = { Tierra:'Siniestro', Siniestro:'Psiquico', Psiquico:'Planta', Planta:'Tierra' };
 function typeMult(atkType, defType){
   if (BEATS[atkType] === defType) return 1.4;

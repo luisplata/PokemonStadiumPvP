@@ -1,4 +1,4 @@
-// Pokémon como DATOS: stats + 4 ids del catálogo (src/data/abilities.js).
+// Criaturas como DATOS: stats + 4 ids del catálogo (src/data/abilities.js).
 // Para crear un bicho nuevo: stats + elegir 4 habilidades existentes.
 // Para crear una habilidad nueva: agregarla al catálogo, no acá.
 import { ABILITIES, makeAbility, canLearn } from './abilities.js';
@@ -66,7 +66,7 @@ const STATS = {
   },
 };
 
-// Formato Pokémon: 1 básico insignia (en STATS, único) + 3 intercambiables.
+// Formato clásico: 1 básico insignia (en STATS, único) + 3 fijas por campeón.
 // Las que salen del kit quedan en el catálogo como pool para otros.
 const KITS = {
   terravox: ['seismic-slam', 'iron-skin', 'earthquake'],
