@@ -53,6 +53,7 @@ export class HUDScene extends Phaser.Scene {
   rebuild() {
     for (const b of this.blocks) {
       b.hpBg.destroy(); b.hpBar.destroy(); b.resBar.destroy(); b.cardGfx.destroy();
+      if (b.portrait) b.portrait.destroy();
       b.hpText.destroy(); b.infoText.destroy();
       b.slots.forEach((s) => { s.icon.destroy(); s.key.destroy(); s.name.destroy(); s.cost.destroy(); s.cd.destroy(); s.pp.destroy(); });
     }
@@ -64,6 +65,8 @@ export class HUDScene extends Phaser.Scene {
         f, left: i === 0,
         hpBg: this.add.graphics(), hpBar: this.add.graphics(), resBar: this.add.graphics(),
         cardGfx: this.add.graphics(),
+        portrait: f.def.portrait && this.textures.exists(f.def.portrait.key)
+          ? this.add.image(-200, -200, f.def.portrait.key) : null,
         hpText: this.add.text(0, 0, '', { fontSize: '13px', color: '#fff', fontStyle: '700' }).setOrigin(0.5),
         infoText: this.add.text(0, 0, '', { fontSize: '12px', color: '#7b8ea3' }).setOrigin(0.5),
         slots: [],
@@ -100,6 +103,17 @@ export class HUDScene extends Phaser.Scene {
       .fillRect(x0, hpY, bw * clamp(p.hp / p.maxHp, 0, 1), 26);
     if (p.status.shield > 0) b.hpBar.fillStyle(0x3aa8d8, 0.85).fillRect(x0, hpY, bw * Math.min(1, p.status.shield / p.maxHp), 26);
     b.hpText.setPosition(width / 2, hpY + 13).setText(`${Math.ceil(p.hp)} / ${p.maxHp}`);
+    // Retrato junto a la barra (izquierda P1, derecha P2).
+    if (b.portrait) {
+      const crop = p.def.portrait.crop;
+      const asp = crop[2] / crop[3];
+      const dh = 46, dw = Math.min(64, dh * asp);
+      const px = b.left ? x0 - dw / 2 - 14 : x0 + bw + dw / 2 + 14;
+      const py = hpY + 13;
+      b.hpBg.fillStyle(0x0e131c, 1).fillRoundedRect(px - dw / 2 - 3, py - 25, dw + 6, 50, 8);
+      b.hpBg.lineStyle(2, p.team === 0 ? 0x3fa9ff : 0xff4d6d, 1).strokeRoundedRect(px - dw / 2 - 3, py - 25, dw + 6, 50, 8);
+      b.portrait.setCrop(crop[0], crop[1], crop[2], crop[3]).setDisplaySize(dw, dh).setPosition(px, py);
+    }
     const rw = bw * 0.6, rx = width / 2 - rw / 2;
     b.resBar.clear().fillStyle(0x0e131c, 1).fillRect(rx, resY, rw, 10);
     b.resBar.fillStyle(0x2f6fd0, 1).fillRect(rx, resY, rw * clamp(p.res / p.maxRes, 0, 1), 10);

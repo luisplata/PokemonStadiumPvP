@@ -13,25 +13,29 @@ function build(stats, abilityIds) {
 
 const STATS = {
   terravox: {
-    name: 'Terravox', role: 'Tanque', type: 'Tierra', icon: '🪨',
+    name: 'Defensor', role: 'Tanque', type: 'Tierra', icon: '🪨',
+    portrait: { key: 'defensor', file: 'defensor.png', crop: [60, 30, 920, 1281] },
     color: '#d4a017', accent: '#f2c94c',
     hp: 1500, res: 100, resRegen: 11, speed: 160, radius: 30, preferredRange: 105,
     basic: { name: 'Golpe Pesado', key: 'LMB', icon: '👊', cd: 0.9, dmg: 80, range: 120, arc: 1.5, kind: 'melee', range_ai: 120 },
   },
   umbraclaw: {
-    name: 'Umbraclaw', role: 'Asesino', type: 'Siniestro', icon: '🗡️',
+    name: 'Ubicador', role: 'Asesino', type: 'Siniestro', icon: '🗡️',
+    portrait: { key: 'ubicador', file: 'ubicador.png', crop: [0, 0, 995, 1222] },
     color: '#a06bff', accent: '#c9a4ff',
     hp: 980, res: 100, resRegen: 15, speed: 205, radius: 24, preferredRange: 85,
     basic: { name: 'Zarpazo', key: 'LMB', icon: '🐾', cd: 0.5, dmg: 58, range: 100, arc: 1.3, kind: 'melee', range_ai: 100 },
   },
   psyflame: {
-    name: 'Psyflame', role: 'Mago', type: 'Psiquico', icon: '🔮',
+    name: 'Energizador', role: 'Mago', type: 'Psiquico', icon: '🔮',
+    portrait: { key: 'energizador', file: 'energizador.png', crop: [15, 15, 752, 1105] },
     color: '#ff5fa2', accent: '#ff9ecb',
     hp: 880, res: 120, resRegen: 15, speed: 175, radius: 24, preferredRange: 430,
     basic: { name: 'Chispa Psíquica', key: 'LMB', icon: '✨', cd: 0.55, dmg: 55, range: 640, kind: 'proj', projSpeed: 900, projRadius: 9, range_ai: 620, color: '#ff9ecb' },
   },
   floraviva: {
-    name: 'Floraviva', role: 'Sanador', type: 'Planta', icon: '🌸',
+    name: 'Mirash', role: 'Sanador', type: 'Planta', icon: '🌸',
+    portrait: { key: 'mirash', file: 'mirash.png', crop: [40, 20, 1390, 3470] },
     color: '#4bd88a', accent: '#9bffc4',
     hp: 1150, res: 130, resRegen: 19, speed: 180, radius: 26, preferredRange: 360,
     basic: { name: 'Latigazo', key: 'LMB', icon: '🌿', cd: 0.7, dmg: 52, range: 520, kind: 'proj', projSpeed: 700, projRadius: 10, range_ai: 500, color: '#9bffc4' },

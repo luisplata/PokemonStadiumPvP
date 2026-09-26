@@ -16,10 +16,10 @@ https://luisplata.github.io/carnaval-solar-arena/
 
 | Criatura | Rol | Tipo | Estilo |
 |---|---|---|---|
-| Terravox | Tanque | Tierra | Cono sísmico, escudo, terremoto |
-| Umbraclaw | Asesino | Siniestro | Dash, invisibilidad + crítico, torbellino |
-| Psyflame | Mago | Psíquico | Bola de fuego con quemadura, teletransporte, nova que aturde |
-| Floraviva | Sanador | Planta | Cura, lianas que enraízan, bendición que limpia estados |
+| Defensor | Tanque | Tierra | Cono sísmico, escudo, terremoto |
+| Ubicador | Asesino | Siniestro | Dash, invisibilidad + crítico, torbellino |
+| Energizador | Mago | Psíquico | Bola de fuego con quemadura, teletransporte, nova que aturde |
+| Mirash | Sanador | Planta | Cura, lianas que enraízan, bendición que limpia estados |
 | Campeón | Bruiser | Veneno | Espinas que frenan, embestida, escudo con espinas, nova venenosa |
 | Mortero | Soporte | Veneno | Bombardeo en área, minas, zona que cura, lluvia de 5 zonas |
 | Franco | Daño | Veneno | Tiro cargado, dash que limpia slow, rayo canalizado |
