@@ -75,6 +75,7 @@ export class ArenaScene extends Phaser.Scene {
     this.cameras.main.centerOn(this.camX, this.camY);
 
     this.renderer = new WorldRenderer(this);
+    this.renderer.syncPillars(this.ctx.pillars);
     this.renderer.syncFighters(this.ctx.fighters);
     this.scene.launch('HUD');
   }
